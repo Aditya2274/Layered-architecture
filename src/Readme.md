@@ -18,3 +18,31 @@ Q) Why didn't we create object of Databaseconfig, (we used static ,like only eas
 
 
 ->In repository ,purpose of creating base repository is ,so that we can reuusable things related to repositories in the base repositories.
+
+_Database Indexing_:
+Think of an index in MongoDB exactly like the Index/Glossary at the back of a massive textbook.
+
+If you want to find "Photosynthesis" in a 1,000-page book, you don't read every page from the start (that's a Collection Scan). You go to the Index, find "P," see the page number, and jump straight there (that's an Index Scan).
+
+1. The Single Field Index
+toolSchema.index({ name: 1 })
+
+What it does: It creates a sorted list of all tool names.
+
+The 1: This means Ascending order (A to Z). If you used -1, it would store them in Descending order (Z to A).
+
+Why use it? If you have 1,000,000 tools and you run Tool.find({ name: 'VS Code' }), MongoDB doesn't have to look at all 1,000,000 documents. It looks at the sorted index and finds it instantly.
+
+2. The Compound Index
+toolSchema.index({ category: 1, isPopular: -1 })
+
+This is a Compound Index because it involves multiple fields. This is like a phone book that is sorted first by Last Name and then by First Name.
+
+category: 1: Sorts all documents by category (API_TOOL, DATABASE, etc.) in alphabetical order.
+
+isPopular: -1: Within each category, it sorts the tools by popularity (True/1 comes before False/0 because it's descending).
+
+Why use it? This perfectly matches your static method findByCategory. It makes queries that filter by category and sort by popularity incredibly fast.
+
+Why should you care?
+FeatureWithout IndexesWith IndexesSearch SpeedSlow (checks every document)Lightning fast (jumps to the result)Resource UsageHigh CPU & MemoryLow CPUWrite SpeedSlightly fasterSlightly slower (DB has to update the index too)
