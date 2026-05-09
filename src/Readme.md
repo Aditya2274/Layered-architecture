@@ -46,3 +46,36 @@ Why use it? This perfectly matches your static method findByCategory. It makes q
 
 Why should you care?
 FeatureWithout IndexesWith IndexesSearch SpeedSlow (checks every document)Lightning fast (jumps to the result)Resource UsageHigh CPU & MemoryLow CPUWrite SpeedSlightly fasterSlightly slower (DB has to update the index too)
+
+Mongoose Query Builder
+"What does this let query = this.model.find(filter); mean?"
+
+This line does not fetch data from the database immediately. Instead, it creates a Query Object.
+
+Think of this.model as a specific database collection (like Users or Products). When you call .find(filter), Mongoose starts drafting a database request. By saving it to the variable let query, you are holding onto that draft.
+
+This allows you to conditionally "chain" more instructions onto the draft before sending it off:
+
+JavaScript
+let query = this.model.find({ status: 'active' }); // Draft started
+
+if (limit) query = query.limit(10); // Draft updated: only get 10
+if (sort) query = query.sort({ age: -1 }); // Draft updated: sort by age
+It’s only when you hit return await query.exec(); at the very end that the query is actually sent to MongoDB to get the results.
+
+1. The JSDoc Comments
+JavaScript
+/**
+ * This method returns Tool by Tool Name
+ * @param {*} name - Tool name
+ * @returns 
+ */
+This special type of comment block (starting with / instead of /*) is called JSDoc. It is the standard way to document JavaScript code.
+
+Because JavaScript doesn't have strict types like Java, developers use JSDoc to explain what a function expects and what it returns. The biggest benefit is IntelliSense:
+
+@param {*} name: This tells the code editor, "This function takes a parameter called 'name'." The {*} means it can be of any data type (though we know it should be a string). If it were TypeScript, you wouldn't need this as much.
+
+@returns: This explains what the function gives back. (It looks like the developer forgot to finish writing the description here!).
+
+If you hover your mouse over the findByName function elsewhere in your code editor, VS Code will pop up a little window showing this exact description, helping other developers know how to use your method without having to open this file.

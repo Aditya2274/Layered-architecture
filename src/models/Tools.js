@@ -56,7 +56,7 @@ toolSchema.index({name: 1});
 toolSchema.statics.findPopular = function(){
     return this.find({isPopular:true}).sort({createdAt:-1});
 }
-toolSchema.staticsfindByCategory=function(){
+toolSchema.statics.findByCategory=function(){
     return this.find({category:-1}).sort({name:1});
 }
 
