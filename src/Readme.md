@@ -66,6 +66,61 @@ Whenever your UserRepository or ToolRepository needs to talk to the database, it
 
 The Analogy:
 Creating new DatabaseConfig() is like building a brand new road from your house to the grocery store every time you want to buy milk. Using static is like building one highway that the whole city shares.
+A highway only has so many lanes. If too many cars try to get on at once, you get a traffic jam.
+
+In backend engineering, this is known as Connection Pool Exhaustion.
+
+Here is exactly how those limits work, what happens when you hit them, and how you control them.
+
+1. The Default Limit (maxPoolSize)
+By default, the modern Node.js MongoDB driver gives you a highway with exactly 100 lanes. This is called the maxPoolSize.
+
+This means your Node.js application can execute 100 database queries at the exact same millisecond. For most small-to-medium applications, 100 concurrent queries is plenty, because a database query usually takes only a few milliseconds to finish. The "cars" are getting on and off the highway incredibly fast.
+
+2. What happens when the limit is reached? (The Traffic Jam)
+If 100 users are currently holding a connection, and User 101 requests data, the app does not crash immediately.
+
+Instead, User 101 is put into a Wait Queue (like waiting at a red light on an on-ramp).
+
+As soon as User 3 finishes their query and gives their connection back to the pool, User 101 grabs it and runs their query.
+
+However, there is a time limit to this queue, usually defined by a setting like serverSelectionTimeoutMS (default is 30 seconds).
+
+If User 101 waits in the queue for more than 30 seconds, Mongoose finally throws a MongoTimeoutError. This is when the user sees the app crash or fail.
+
+3. How to Configure the Limits
+You can explicitly control these limits when you configure your database connection in your DatabaseConfig.
+
+JavaScript
+const mongoose = require('mongoose');
+
+class DatabaseConfig {
+    static async connect() {
+        await mongoose.connect(process.env.MONGO_URI, {
+            // The maximum number of connections the pool will create
+            maxPoolSize: 50, 
+            
+            // The minimum number of connections to keep open, 
+            // even if no one is using the app right now
+            minPoolSize: 10, 
+            
+            // How long a query will wait in the queue before failing (in ms)
+            serverSelectionTimeoutMS: 5000 
+        });
+        console.log("Database connected successfully");
+    }
+}
+4. Why not just set the limit to 10,000?
+If 100 lanes are good, why not build a 10,000-lane highway? Because connections cost memory (RAM).
+
+Both your Node.js server and the MongoDB server have to allocate RAM to keep a connection open. On the MongoDB server side, every single open connection takes roughly 1 Megabyte of RAM.
+
+If you set your maxPoolSize to 5,000, and you hit that limit, your MongoDB server suddenly needs 5GB of RAM just to keep the connections open, before it even starts searching for data.
+
+If your MongoDB server only has 2GB of RAM, the server will run out of memory, crash, and restart.
+
+To summarize:
+The limits are a balancing act. You want a pool size large enough to handle traffic spikes without making users wait in a queue, but small enough that you don't exhaust your database server's RAM.
 
 
 ->In repository ,purpose of creating base repository is ,so that we can reuusable things related to repositories in the base repositories.
