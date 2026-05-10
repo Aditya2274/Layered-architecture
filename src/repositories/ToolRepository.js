@@ -13,6 +13,11 @@ class ToolRepository extends BaseRepository{
     async findByName(name){
         return await this.findOne({name});
     }
+    /**
+     * This method returns Tool by Tool Category
+     * @param {*} name 
+     * @returns 
+     */
     async findByCategory(name){
         return await Tool.findByCategory({name});
     }
