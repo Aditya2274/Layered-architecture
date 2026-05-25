@@ -20,7 +20,7 @@ class ToolController{
             const options={};
             if(limit) options.limit=parseInt(limit);
             if(skip) options.skip=parseInt(skip);
-
+            if(sort) options.sort = JSON.parse(sort);
 
             let tools;
             if(search){
